@@ -1,0 +1,66 @@
+{
+    "manifest_version": 2,
+    "name": "Better YouTube API",
+    "version": "0.0.1",
+    /*"default_locale": "en",*/
+    "description": "Adds more playback speed options to YouTube videos",
+    "icons": {
+        "144": "favicon.png"
+    },
+    /*"background": {
+        "scripts": ["background.js"]
+    },*/
+    /*"commands": {
+        "speed-up": {
+            "suggested_key": {
+                "default": "Ctrl+Up"
+            },
+            "description": "Increase playback speed"
+        },
+        "speed-down": {
+            "suggested_key": {
+                "default": "Ctrl+Down"
+            },
+            "description": "Decrease playback speed"
+        },
+        "speed-reset": {
+            "suggested_key": {
+                "default": "Ctrl+Space"
+            },
+            "description": "Reset playback speed to 1x"
+        }
+    },*/
+    "content_scripts": [
+        {
+            "matches": [
+                "https://*/*",
+                "http://*/*"
+            ],
+            "exclude_matches": [
+                "https://*.youtube.com/*",
+                "http://*.youtube.com/*",
+                "https://*.netflix.com/*",
+                "https://*.hulu.com/*"
+            ],
+            "js": [
+                "BYAClient.js"
+            ],
+            "all_frames": true
+        },
+        {
+            "matches": [
+                "https://*.youtube.com/*",
+                "http://*.youtube.com/*",
+                "https://*.netflix.com/*",
+                "https://*.hulu.com/*"
+            ],
+            "js": [
+                "BYAServer.js"
+            ],
+            "all_frames": true
+        }
+    ],
+    "permissions": [
+        "storage"
+    ]
+}
