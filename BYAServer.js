@@ -18,17 +18,19 @@
     var playButton = document.getElementsByClassName('ytp-play-button')[0];
 
     var playbackRate;
-    chrome.storage.sync.get({'embeddedYouTubePlaybackRate': 1}, function(val) {
+    const getPlaybackRate = () => chrome.storage.sync.get({ 'embeddedYouTubePlaybackRate': 1 }, function (val) {
         playbackRate = val.embeddedYouTubePlaybackRate;
         video.playbackRate = playbackRate;
     });
-    var updatePlaybackRate = function() {
-        chrome.storage.sync.set({'embeddedYouTubePlaybackRate': playbackRate}, function(){});
+    video.addEventListener('loadedmetadata', getPlaybackRate);
+    getPlaybackRate();
+    var updatePlaybackRate = function () {
+        chrome.storage.sync.set({ 'embeddedYouTubePlaybackRate': playbackRate }, function () { });
     };
-    var skip = function(seconds) {
-        chrome.storage.sync.set({'pendingYouTubeSkipSeconds': seconds}, function(){});
+    var skip = function (seconds) {
+        chrome.storage.sync.set({ 'pendingYouTubeSkipSeconds': seconds }, function () { });
     };
-    chrome.storage.onChanged.addListener(function(changes, areaName) {
+    chrome.storage.onChanged.addListener(function (changes, areaName) {
         if ('sync' != areaName) {
             return;
         }
@@ -44,14 +46,14 @@
                 newTime = 0;
             }
             video.currentTime = newTime;
-            chrome.storage.sync.remove('pendingYouTubeSkipSeconds', function(){});
+            chrome.storage.sync.remove('pendingYouTubeSkipSeconds', function () { });
         }
     });
 
-    var isInputElement = function(target) {
+    var isInputElement = function (target) {
         return target.tagName == 'INPUT' || target.tagName == 'TEXTAREA';
     };
-    var playerIsTarget = function(target) {
+    var playerIsTarget = function (target) {
         while (target) {
             if ('player-container' == target.id) {
                 return true;
@@ -60,7 +62,7 @@
         }
         return false;
     };
-    window.addEventListener('keyup', function(event) {
+    window.addEventListener('keyup', function (event) {
         if (!playbackRate || isInputElement(event.target)) {
             return;
         }
