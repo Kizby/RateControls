@@ -17,15 +17,16 @@
     var fullScreenButton = document.getElementsByClassName('ytp-fullscreen-button')[0];
     var playButton = document.getElementsByClassName('ytp-play-button')[0];
 
-    var playbackRate;
-    const getPlaybackRate = () => chrome.storage.sync.get({ 'embeddedYouTubePlaybackRate': 1 }, function (val) {
-        playbackRate = val.embeddedYouTubePlaybackRate;
-        video.playbackRate = playbackRate;
+    var playbackExponent = 0;
+    const playbackRate = () => Math.pow(1.05, playbackExponent);
+    const getPlaybackExponent = () => chrome.storage.sync.get({ 'embeddedYouTubePlaybackExponent': 1 }, function (val) {
+        playbackExponent = val.embeddedYouTubePlaybackExponent;
+        video.playbackExponent = playbackRate();
     });
-    video.addEventListener('loadedmetadata', getPlaybackRate);
-    getPlaybackRate();
-    var updatePlaybackRate = function () {
-        chrome.storage.sync.set({ 'embeddedYouTubePlaybackRate': playbackRate }, function () { });
+    video.addEventListener('loadedmetadata', getPlaybackExponent);
+    getPlaybackExponent();
+    var updatePlaybackExponent = function () {
+        chrome.storage.sync.set({ 'embeddedYouTubePlaybackExponent': playbackExponent }, function () { });
     };
     var skip = function (seconds) {
         chrome.storage.sync.set({ 'pendingYouTubeSkipSeconds': seconds }, function () { });
@@ -34,14 +35,14 @@
         if ('sync' != areaName) {
             return;
         }
-        var newRate = changes.embeddedYouTubePlaybackRate;
-        if (newRate) {
-            playbackRate = newRate.newValue;
-            video.playbackRate = playbackRate;
+        var newExponent = changes.embeddedYouTubePlaybackExponent;
+        if (newExponent) {
+            playbackExponent = newExponent.newValue;
+            video.playbackRate = playbackRate();
         }
         var newSkip = changes.pendingYouTubeSkipSeconds;
         if (newSkip && newSkip.newValue) {
-            var newTime = video.currentTime + newSkip.newValue * playbackRate;
+            var newTime = video.currentTime + newSkip.newValue * playbackExponent;
             if (newTime < 0) {
                 newTime = 0;
             }
@@ -63,7 +64,7 @@
         return false;
     };
     window.addEventListener('keyup', function (event) {
-        if (!playbackRate || isInputElement(event.target)) {
+        if (isInputElement(event.target)) {
             return;
         }
         if (!event.ctrlKey) {
@@ -80,21 +81,21 @@
                 skip(-5);
                 break;
             case 38: // up arrow
-                playbackRate += 0.25;
-                updatePlaybackRate();
+                playbackExponent += 1;
+                updatePlaybackExponent();
                 break;
             case 39: // right arrow
                 skip(5);
                 break;
             case 40: // down arrow
-                if (0.25 < playbackRate) {
-                    playbackRate -= 0.25;
-                    updatePlaybackRate();
+                if (0.25 < playbackRate()) {
+                    playbackExponent -= 1;
+                    updatePlaybackExponent();
                 }
                 break;
             case 32: // space
-                playbackRate = 1;
-                updatePlaybackRate();
+                playbackExponent = 0;
+                updatePlaybackExponent();
                 break;
             case 13: // enter
                 if (fullScreenButton) {
